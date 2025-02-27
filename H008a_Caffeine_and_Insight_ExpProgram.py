@@ -239,7 +239,9 @@ def GPT_evaluate_answer(prompt, user_solution):
 
 def write_data():
     # WRITE DATA
-    myFile_loc = f"data/H008a_output_data_{datetime.now()}.csv"
+    # Ensure timestamp is Windows-friendly
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`
+    myFile_loc = f"data/H008a_output_data_{timestamp}.csv"
     # This loop writes the data in the matrix to the .csv              
     edit_myFile = open(myFile_loc, 'w', newline='')
     with edit_myFile as myFile:
