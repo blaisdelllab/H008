@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-02-26
+# Last edited on: 2025-02-27
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
