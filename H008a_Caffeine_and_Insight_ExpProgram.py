@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-02-27
+# Last edited on: 2025-03-13
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
@@ -71,8 +71,8 @@ dict_of_question_info = {
     "reading_problem"  : {
         "insight_question"              : "'What is the common phrase illustrated here? |r|e|a|d|i|n|g|'",
         "insight_answer"                : "'Reading between the lines'",
-        "possible_incorrect_solution"   : "'r e a d i n g' or 'read the lines in between', respectively",
-        "possible_incorrect_feedback"   : "'There's more to it than that. We are looking for a classic phrase' or 'You're close, but we're looking for a specific phrase', respectively",
+        "possible_incorrect_solution"   : "'r e a d i n g' or 'read the lines in between' or 'letters between the lines', respectively",
+        "possible_incorrect_feedback"   : "'There's more to it than that. We are looking for a classic phrase' or 'You're close, but we're looking for a specific phrase' or 'You're close, but we're looking for a known phrase', respectively",
         "problem_type"                  : "VERBAL"
         },
     "unlisted_phone_numbers_problem"  : {
@@ -110,7 +110,7 @@ dict_of_question_info = {
         "problem_type"                  : "MATHEMATICAL"
         },
     "constraint_relaxation_problem"  : {
-        "insight_question"              : """'Imagine the following Roman Numerals are made of vertical matchsticks, where “X” is two crossed matchsticks and “I” is a single matchstick. Move only a single matchstick to make a correct arithmetic equation: X + IV = V
+        "insight_question"              : """'Imagine the following equation is made of matchsticks, where “X” and “+” are two crossed matchsticks and “I” is a single matchstick. If you were to move only a single matchstick to correct this arithmetic equation, what would the new equation be? X + IV = V
                                ROMAN NUMERALS
                             I   = 1   , II   = 2,
                             III = 3   , IV   = 4,
@@ -119,13 +119,13 @@ dict_of_question_info = {
                             IX  = 9   , X    = 10
                             XV  = 15  , XX   = 20
                                           '""",
-        "insight_answer"                : "'Imagine the following Roman Numerals are made of vertical matchsticks, where “X” is two crossed matchsticks and “I” is a single matchstick. Move the vertical matchstick from the “+” sign to create a sum of “VI”'",
-        "possible_incorrect_solution"   : "'Use one of the matchsticks from the plus sign to create an unequal sign' or, respectively ",
+        "insight_answer"                : "'X - IV = VI'",
+        "possible_incorrect_solution"   : "'X - IV ≠ V' or, respectively ",
         "possible_incorrect_feedback"   : "'You cannot create an unequal (not-equal) sign' or, respectively",
         "problem_type"                  : "MATHEMATICAL"
         },
     "chunk_decomposition_problem"  : {
-        "insight_question"              : """'Move only a single matchstick to make a correct arithmetic equation: V = XI - I
+        "insight_question"              : """'Imagine the following equation is made of matchsticks, where “X” is two crossed matchsticks and “I” is a single matchstick. If you were to move only a single matchstick to correct this arithmetic equation, what would the new equation be? V = XI - I
                                ROMAN NUMERALS
                             I   = 1   , II   = 2,
                             III = 3   , IV   = 4,
@@ -135,20 +135,20 @@ dict_of_question_info = {
                             XV  = 15  , XX   = 20
 
                                           '""",
-        "insight_answer"                : "'Move a matchstick from the “X” to create a “V”' or 'Move the vertical matchstick from the plus sign to the “X” to create “IX”'",
-        "possible_incorrect_solution"   : "'Switch the equal signs' or 'Take a matchstick from “V” and add it to the “I” to create “X”' or 'Use one of the matchsticks from the plus sign to create an unequal sign', respectively",
+        "insight_answer"                : "'X = XI - I' or 'V = VI - I'",
+        "possible_incorrect_solution"   : "'V - XI = I' or 'I = XI - X' or 'V ≠ X - I', respectively",
         "possible_incorrect_feedback"   : "'This results in a calculation error' or 'In order to make this operation correct, you'd have to change the rotation of two matchsticks, which is not allowed' or 'You cannot create an unequal (not-equal) sign', respectively",
         "problem_type"                  : "MATHEMATICAL"
         },
     "coin_problem"  : {
-        "insight_question"              : """'Move two coins so that each coin touches three other coins:
+        "insight_question"              : """'How would you rearrange two coins so that each coin touches three other coins?:
                                  _   _   _
                                 (_)_(_)_(_)
                                  _(_)_(_)_
                                 (_) (_) (_)
 
                                           '""",
-        "insight_answer"                : "'Move two coins such that each coin creates two stacks of four'",
+        "insight_answer"                : "'Move two coins such that each coin creates two stacks of four. Each stack has a base of three coins.'",
         "possible_incorrect_solution"   : "'Move one of the right coins to the top, in between the two top-most coins. Then move the other right coin to the bottom, in between the two bottom-most coins'",
         "possible_incorrect_feedback"   : "'With this formation, the only coin touching three other coins is the center coin. All other coins touch two'",
         "problem_type"                  : "MATHEMATICAL"
@@ -174,7 +174,7 @@ dict_of_question_info = {
                                           '""",
         "insight_answer"                : "'Open all the links from one piece and use those to attach the three remaining pieces together'",
         "possible_incorrect_solution"   : "'Open one link from each chain and link them together' or 'Open two links at once from two of the chains. Use those four open links to connect all the chains', respectively",
-        "possible_incorrect_feedback"   : "'You would spend 6 cents to open and close 3 links, but you're still left with an open loop of chain' or 'Opening two links at once will still cost 2 cents each to open and 1 cents each to close. With this strategy, you've spent 12 cents', respectively",
+        "possible_incorrect_feedback"   : "'You would spend 6 cents to open and close 3 links, but you're still left with an open loop of chain' or 'Opening two links at once will still cost 2 cents each to open and 1 cent each to close. With this strategy, you've spent 12 cents', respectively",
         "problem_type"                  : "SPATIAL"
         },
     "deck_of_cards_problem"  : {
@@ -186,7 +186,9 @@ dict_of_question_info = {
         }, 
     "star_coin_problem"  : {
         "insight_question"              : """'How can you arrange these 10 pennies so that you have 5 rows (lines) of 4 pennies in each row?
-                            ◯ ◯ ◯ ◯ ◯ ◯ ◯ ◯ ◯ ◯
+                     _   _   _   _   _   _   _   _   _   _
+                    (_) (_) (_) (_) (_) (_) (_) (_) (_) (_)
+
                                           '""",
         "insight_answer"                : "'Arrange the coins in a star-shaped formation, where each “line” of the star is made up of 4 pennies'",
         "possible_incorrect_solution"   : "'Create a square' or, respectively",
@@ -210,7 +212,7 @@ dict_of_question_info = {
         "insight_question"              : "'A traveler comes to a riverbank with a wolf, a goat, and a head of cabbage. There is a boat for crossing over to the other bank, but he can’t carry more than two at a time–the traveler himself and one of the two animals or the cabbage. If left alone together, the goat will eat the cabbage and the wolf will eat the goat. The wolf does not eat cabbage. How does the traveler transport his animals and his cabbage to the other side in the minimum number of round trips (back-and-forth = 1 trip)?'",
         "insight_answer"                : "'The traveler will take the goat with him to the other side. After dropping the goat off, he will row back to the riverbank. Next, the traveler will pick up the wolf and take it to the other side. He will return to the riverbank with the goat. Then, the traveler will leave the goat and take the cabbage across with him. Finally, the traveler will pick up the goat and take it to the other side' or 'First, the traveler will take the goat with him to the other side. After dropping the goat off, he will row back to the riverbank. Next, the traveler will take the cabbage with him and take it to the other side. On his return trip, the traveler will take the goat to the original riverbank. Then, the goat is dropped off and the traveler takes the wolf across, dropping the wolf off with the cabbage. Finally, the traveler will take the goat,' respectively",
         "possible_incorrect_solution"   : "'Take the wolf first,' respectively",
-        "possible_incorrect_feedback"   : "'Taking the wolf first leaves the goat and cabbage together' or 'You can take everyone across in seven trips', respectively",
+        "possible_incorrect_feedback"   : "'Taking the wolf first leaves the goat and cabbage together' or 'You can take everyone across in seven trips (3.5 round trips)', respectively",
         "problem_type"                  : "SPATIAL"
         },
     }
@@ -222,16 +224,27 @@ def GPT_evaluate_answer(prompt, user_solution):
         print("\nThank you for participating!")
         write_data()
         sys.exit()
+    elif user_solution == "pass":
+        return("yes")
     else:
         print(center_text("Checking solution..."))
+
+        combined_prompt = f"{prompt}. Here is the solution to evaluate: '{user_solution}'."
         completion = client.chat.completions.create(
-            model="gpt-4o-mini", # Model; can be changed to....
-            messages=[
-                {"role": "system",
-                 "content": prompt}, # First is the intial prompt w/ correct answers
+            model="o3-mini", # Model; can be changed to....
+            messages= [
                 {"role": "user",
-                 "content": user_solution} # Next is the subject solution
+                    "content" : [{"type": "text","text": combined_prompt}]
+                    }
                 ]
+
+            # works for "gpt-4o-mini"
+            #[
+            #    {"role": "system",
+            #     "content": prompt}, # First is the intial prompt w/ correct answers
+            #    {"role": "user",
+            #     "content": user_solution} # Next is the subject solution
+            #    ]
             )
         model_evaluation = completion.choices[0].message.content # grab just text output
         model_evaluation = model_evaluation.strip() 
@@ -257,10 +270,10 @@ def write_data():
 list_of_answers = [["TrialNumber", "Solution", "Accuracy", "GPT_Hint"]]
 trial_number = 0
 
-# questions = list(dict_of_question_info.keys())
-# random.shuffle(questions)
+questions = list(dict_of_question_info.keys())
+random.shuffle(questions)
 
-for question in dict_of_question_info:
+for question in questions:
 
     tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
     trial_number += 1 # Increment trial number by 1
@@ -280,11 +293,12 @@ for question in dict_of_question_info:
     answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
     If you are given a solution that is close enough to this one, respond with 
     'yes' and only yes.  If some other non-insightful solution, respond with a 
-    sentence of feedback on why that answer isincorrect without giving away the 
+    sentence of feedback on why that answer is incorrect without giving away the 
     answer. For example, if someone were to give the answer 
     {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
-    might be {tested_trial_info["possible_incorrect_feedback"]}. Be careful to not give 
-    away the answer in your feedback. Also, note that in your feedback, don't ever 
+    might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
+    importance that you do not give away the answer. Make sure to double check that 
+    your feedback does not. Also, note that in your feedback, don't ever 
     refer to these as riddles, but refer to them as problems. 
     """
 
