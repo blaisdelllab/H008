@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-03-13
+# Last edited on: 2025-03-20
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
@@ -70,7 +70,7 @@ dict_of_question_info = {
         },
     "reading_problem"  : {
         "insight_question"              : "'What is the common phrase illustrated here? |r|e|a|d|i|n|g|'",
-        "insight_answer"                : "'Reading between the lines'",
+        "insight_answer"                : "'Reading between the lines'. This exact answer must be given. Synonyms can't be used, but capitalization doesn't matter."
         "possible_incorrect_solution"   : "'r e a d i n g' or 'read the lines in between' or 'letters between the lines', respectively",
         "possible_incorrect_feedback"   : "'There's more to it than that. We are looking for a classic phrase' or 'You're close, but we're looking for a specific phrase' or 'You're close, but we're looking for a known phrase', respectively",
         "problem_type"                  : "VERBAL"
@@ -328,6 +328,15 @@ for question in questions:
 
 # WRITE DATA
 write_data()
+
+# TO DO LIST
+# Implement into the code trial timer, session timer, and inter-answer interval
+# Have ChatGPT rank the proximty of given answer to solution on a scale of 1-10
+# Question-Type
+# Number of forfeited questions
+# Data counter that are incorrect/correct
+# Current question number
+# Quasi-random trial
 
 
 
