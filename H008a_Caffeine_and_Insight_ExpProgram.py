@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-03-20
+# Last edited on: 2025-04-10
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
@@ -24,11 +24,13 @@ solutions, and hint provided by the system.
 # Import libraries 
 from csv import writer, QUOTE_MINIMAL
 from datetime import datetime
+from time import time
 from openai import OpenAI
 import os
 import sys
 import shutil
-import random
+from random import shuffle
+from os import getcwd, mkdir, path as os_path
 
 
 # Function to clear the terminal
@@ -70,7 +72,7 @@ dict_of_question_info = {
         },
     "reading_problem"  : {
         "insight_question"              : "'What is the common phrase illustrated here? |r|e|a|d|i|n|g|'",
-        "insight_answer"                : "'Reading between the lines'. This exact answer must be given. Synonyms can't be used, but capitalization doesn't matter."
+        "insight_answer"                : "'Reading between the lines'. This exact answer must be given. Synonyms can't be used, but capitalization doesn't matter.",
         "possible_incorrect_solution"   : "'r e a d i n g' or 'read the lines in between' or 'letters between the lines', respectively",
         "possible_incorrect_feedback"   : "'There's more to it than that. We are looking for a classic phrase' or 'You're close, but we're looking for a specific phrase' or 'You're close, but we're looking for a known phrase', respectively",
         "problem_type"                  : "VERBAL"
@@ -222,10 +224,10 @@ def GPT_evaluate_answer(prompt, user_solution):
     if user_solution == "quit":
         clear_terminal()
         print("\nThank you for participating!")
-        write_data()
+        write_data_file()
         sys.exit()
     elif user_solution == "pass":
-        return("yes")
+        return("pass")
     else:
         print(center_text("Checking solution..."))
 
@@ -250,8 +252,30 @@ def GPT_evaluate_answer(prompt, user_solution):
         model_evaluation = model_evaluation.strip() 
         return(model_evaluation)
 
-def write_data():
+def write_data_row(resp, correct_or_incorrect, feedback):
+    # Add current response to data file
+    list_of_answers.append(
+    [trial_number,                  # Trial number (fixed within a question)
+    question_shorthand,             # Question name shorthand
+    resp,                           # Participant response
+    correct_or_incorrect,           # "Correct" or "Incorrect" string
+    feedback,                       # GPT feedback
+    trial_problem_type,             # Probelem type (e.g., "SPATIAL")
+    passed_trials,                  # Number of questions "passed" by participant
+    correct_trials,                 # Incrementing counter of correct answers
+    incorrect_answers,              # Incrementing counter of incorrect answers
+    datetime.now() - start_time,    # Session timer
+    datetime.now() - trial_time,    # Trial timer
+    round(time() - prev_IRI_time,3) # Inter-response-interval timer
+    ])
+
+
+def write_data_file():
     # WRITE DATA
+    # Make folder 
+    data_folder_directory = getcwd() + "/data"
+    if not os_path.isdir(data_folder_directory):
+        mkdir(data_folder_directory)
     # Ensure timestamp is Windows-friendly
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`
     myFile_loc = f"data/H008a_output_data_{timestamp}.csv"
@@ -262,21 +286,54 @@ def write_data():
         w.writerows(list_of_answers) # Write all event/trial data 
     print(f"\n- Data file written to {myFile_loc}")
 
+# Setup data variables
+list_of_answers = [["TrialNumber", "Question", "Solution", "Accuracy",
+                    "GPT_Hint", "ProblemType", "PassedQuestions",
+                    "CorrectTrials", "IncorrectAnswers", "SessionTimer",
+                    "TrialTimer", "IRITimer"]]
+trial_number        = 0
+passed_trials       = 0
+correct_trials      = 0
+incorrect_answers   = 0
 
-# TO-DO: Shuffle order systematically
-# TO-DO: Make the spatial problems suitable for participants
-# TO-DO: Build data structure
+# Setup timing variables
+start_time    = datetime.now()
+trial_time    = datetime.now()
+prev_IRI_time = time()
 
-list_of_answers = [["TrialNumber", "Solution", "Accuracy", "GPT_Hint"]]
-trial_number = 0
-
+# Setup questions
 questions = list(dict_of_question_info.keys())
-random.shuffle(questions)
 
+# Quasi-randomly shuffle questions so that there are never more than 
+# two repetitions of problem type in a row
+good_order = False
+while not good_order:
+    shuffle(questions)  # Randomize the trial order
+    approved = True     # Innocent until proven guilty
+    c = 0  # Counter
+    while c < len(questions) and approved:
+        if c >= 2:
+            # Ensure no more than 3 consecutive trials of the same type
+            a  = dict_of_question_info[questions[c]]["problem_type"]
+            a1 = dict_of_question_info[questions[c-1]]["problem_type"]
+            a2 = dict_of_question_info[questions[c-2]]["problem_type"]
+            if a == a1 == a2:
+                approved = False
+                break
+        c += 1
+    if approved:
+        good_order = True
+
+
+# Main loop
 for question in questions:
-
+    # For each question, we set up relevant data
     tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
+    trial_problem_type = tested_trial_info["problem_type"] # Tested trial type
     trial_number += 1 # Increment trial number by 1
+    trial_time    = datetime.now()
+    prev_IRI_time = time()
+    question_shorthand = question
 
     # Setup loop to run experiment
     prev_answer_incorrect = False
@@ -316,30 +373,34 @@ for question in questions:
         # Evaluation
         GPT_eval = GPT_evaluate_answer(prompt, user_response)
         if GPT_eval.lower() == "yes":
-            list_of_answers.append([trial_number, user_response, "Correct", "NA"])
+            correct_trials += 1
+            # Write a row of data
+            write_data_row(user_response, "Correct", "NA")
             print("\nCorrect! You've found an insightful solution.")
             input("Hit enter to continue...")
             break
+        elif GPT_eval.lower() == "pass":
+            passed_trials += 1
+            write_data_row(user_response, "Pass", "NA")
+            print("\nQuestion forfeited.")
+            input("Hit enter to continue...")
+            break
         else:
-            list_of_answers.append([trial_number, user_response, "Incorrect", GPT_eval])
+            incorrect_answers += 1
+            write_data_row(user_response, "Incorrect", GPT_eval)
             prev_answer_incorrect = True
+            prev_IRI_time = time()
 
 
 
 # WRITE DATA
-write_data()
+write_data_file()
 
 # TO DO LIST
-# Implement into the code trial timer, session timer, and inter-answer interval
 # Have ChatGPT rank the proximty of given answer to solution on a scale of 1-10
-# Question-Type
-# Number of forfeited questions
-# Data counter that are incorrect/correct
-# Current question number
-# Quasi-random trial
-
-
-
-
+# Make the spatial problems suitable for participants
+# Add automated shutdown after 60 minutes
+# If they pass, give another shot
+# 
 
 
