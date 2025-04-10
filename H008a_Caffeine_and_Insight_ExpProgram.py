@@ -121,7 +121,7 @@ dict_of_question_info = {
                             IX  = 9   , X    = 10
                             XV  = 15  , XX   = 20
                                           '""",
-        "insight_answer"                : "'X - IV = VI'",
+        "insight_answer"                : "'X - IV = VI' or 'IX - IV = V'",
         "possible_incorrect_solution"   : "'X - IV ≠ V' or, respectively ",
         "possible_incorrect_feedback"   : "'You cannot create an unequal (not-equal) sign' or, respectively",
         "problem_type"                  : "MATHEMATICAL"
