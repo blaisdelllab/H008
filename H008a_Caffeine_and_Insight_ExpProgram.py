@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-04-10
+# Last edited on: 2025-04-17
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
@@ -23,7 +23,7 @@ solutions, and hint provided by the system.
 
 # Import libraries 
 from csv import writer, QUOTE_MINIMAL
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 from openai import OpenAI
 import os
@@ -31,6 +31,10 @@ import sys
 import shutil
 from random import shuffle
 from os import getcwd, mkdir, path as os_path
+import string
+
+# Define variables that can be changed
+session_duration = datetime.now() + timedelta(minutes = 60) # Max session time is 60 min
 
 
 # Function to clear the terminal
@@ -252,13 +256,14 @@ def GPT_evaluate_answer(prompt, user_solution):
         model_evaluation = model_evaluation.strip() 
         return(model_evaluation)
 
-def write_data_row(resp, correct_or_incorrect, feedback):
+def write_data_row(resp, correct_or_incorrect, feedback, grade):
     # Add current response to data file
     list_of_answers.append(
     [trial_number,                  # Trial number (fixed within a question)
     question_shorthand,             # Question name shorthand
     resp,                           # Participant response
     correct_or_incorrect,           # "Correct" or "Incorrect" string
+    grade,                          # Grade evaluation of incorrect answer (1-5)
     feedback,                       # GPT feedback
     trial_problem_type,             # Probelem type (e.g., "SPATIAL")
     passed_trials,                  # Number of questions "passed" by participant
@@ -288,7 +293,7 @@ def write_data_file():
 
 # Setup data variables
 list_of_answers = [["TrialNumber", "Question", "Solution", "Accuracy",
-                    "GPT_Hint", "ProblemType", "PassedQuestions",
+                    "Grade", "GPT_Hint", "ProblemType", "PassedQuestions",
                     "CorrectTrials", "IncorrectAnswers", "SessionTimer",
                     "TrialTimer", "IRITimer"]]
 trial_number        = 0
@@ -324,83 +329,117 @@ while not good_order:
     if approved:
         good_order = True
 
-
+##############################################################################
 # Main loop
 for question in questions:
-    # For each question, we set up relevant data
-    tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
-    trial_problem_type = tested_trial_info["problem_type"] # Tested trial type
-    trial_number += 1 # Increment trial number by 1
-    trial_time    = datetime.now()
-    prev_IRI_time = time()
-    question_shorthand = question
+    # Check if timer has ellapsed
+    if datetime.now() >= (session_duration):
+        print("Time max reached")
+        write_data_row("TimerElapsed", "NA", "NA", "NA")
+        break
+    else:
+        # For each question, we set up relevant data
+        tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
+        trial_problem_type = tested_trial_info["problem_type"] # Tested trial type
+        trial_number += 1 # Increment trial number by 1
+        trial_time    = datetime.now()
+        prev_IRI_time = time()
+        question_shorthand = question
 
-    # Setup loop to run experiment
-    prev_answer_incorrect = False
-    GPT_eval = "NA" # Output of GPT
-    GPT_hint = "NA"
+        # Setup loop to run experiment
+        prev_answer_incorrect = False
+        GPT_eval = "NA" # Output of GPT
+        GPT_hint = "NA"
 
-    # The function below interacts with ChatGPT to evaluate a subject's written
-    # response. It takes two arguments: the subject's solution and the following
-    # prompt, and will return either "yes" or "no" based on how close it is.
-    prompt = f"""
-    You are an expert in the psychological process of insight. Your goal is to
-    evaluate the responses of experimental subjects to the following insight
-    question: {tested_trial_info["insight_question"]}. You know that the correct 
-    answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
-    If you are given a solution that is close enough to this one, respond with 
-    'yes' and only yes.  If some other non-insightful solution, respond with a 
-    sentence of feedback on why that answer is incorrect without giving away the 
-    answer. For example, if someone were to give the answer 
-    {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
-    might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
-    importance that you do not give away the answer. Make sure to double check that 
-    your feedback does not. Also, note that in your feedback, don't ever 
-    refer to these as riddles, but refer to them as problems. 
-    """
+        # The function below interacts with ChatGPT to evaluate a subject's written
+        # response. It takes two arguments: the subject's solution and the following
+        # prompt, and will return either "yes" or "no" based on how close it is.
 
-    while True:
-        clear_terminal()
-        print("\n")
-        print(center_text("** Insight Experiment **"))
-        print("\nPlease provide a solution to the following problem:\n\n" + tested_trial_info["insight_question"])
-        print("_" * int(shutil.get_terminal_size().columns) + "\n") # Aesthetics
-        if prev_answer_incorrect:
-            user_response = input(f"{GPT_eval} Try again: ") # Give a hint
-        else:
-            user_response = input("Enter your solution (or 'quit' to exit): ")
+        prompt = f"""
+        You are an expert in the psychological process of insight. Your goal is to
+        evaluate the responses of experimental subjects to the following insight
+        question: {tested_trial_info["insight_question"]}. You know that the correct 
+        answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
+        If you are given a solution that is close enough to this one, respond with 
+        'yes' and only yes.  If some other non-insightful solution, respond with a 
+        sentence of feedback on why that answer is incorrect without giving away the 
+        answer. For example, if someone were to give the answer 
+        {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
+        might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
+        importance that you do not give away the answer. Make sure to double check that 
+        your feedback does not. Also, note that in your feedback, don't ever 
+        refer to these as riddles, but refer to them as problems. 
+        """
 
-        # Evaluation
-        GPT_eval = GPT_evaluate_answer(prompt, user_response)
-        if GPT_eval.lower() == "yes":
-            correct_trials += 1
-            # Write a row of data
-            write_data_row(user_response, "Correct", "NA")
-            print("\nCorrect! You've found an insightful solution.")
-            input("Hit enter to continue...")
-            break
-        elif GPT_eval.lower() == "pass":
-            passed_trials += 1
-            write_data_row(user_response, "Pass", "NA")
-            print("\nQuestion forfeited.")
-            input("Hit enter to continue...")
-            break
-        else:
-            incorrect_answers += 1
-            write_data_row(user_response, "Incorrect", GPT_eval)
-            prev_answer_incorrect = True
-            prev_IRI_time = time()
+        prompt = f"""
+        You are an expert in the psychological process of insight. Your goal is to
+        evaluate the responses of experimental subjects to the following insight
+        riddle: {tested_trial_info["insight_question"]}. You know that the correct 
+        answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
+        If you are given a solution that is close enough to this one, respond with 
+        'yes' and only yes.  If some other non-insightful solution, respond with a 
+        sentence of feedback on why that answer is incorrect without giving away the 
+        answer. For example, if someone were to give the answer 
+        {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
+        might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
+        importance that you do not give away the answer in your hint. Make sure to
+        double check that your feedback does not give away the answer. Also, note
+        that in your feedback, don't ever refer to these as riddles, but refer to them
+        as problems. In addition to the verbal feedback, create a numeric grade to 
+        evaluate the degree of correctness of the participants answer. The number should
+        on a scale of 1-5, with 1 (nonsense), 2 (sensical but far from a correct solution),
+        3 (contains some key words but far from the solution), 4 (mostly correct but
+        missing some fundamental details about our specific answer), and 5 (almost perfect).
+        End your feedback response for incorrect answers with a single number evaluating their
+        correctness with no additional punctuation.
+        """
 
+        while True:
+            clear_terminal()
+            print("\n")
+            print(center_text("** Insight Experiment **"))
+            print("\nPlease provide a solution to the following problem:\n\n" + tested_trial_info["insight_question"])
+            print("_" * int(shutil.get_terminal_size().columns) + "\n") # Aesthetics
+            if prev_answer_incorrect:
+                user_response = input(f"{GPT_eval}. Try again: ") # Give a hint
+            else:
+                user_response = input("Enter your solution (or 'quit' to exit): ")
 
+            ## Evaluation
+            GPT_eval = GPT_evaluate_answer(prompt, user_response)
+            # If correct
+            if GPT_eval.lower() == "yes":
+                correct_trials += 1
+                # Write a row of data
+                write_data_row(user_response, "Correct", "NA", "NA")
+                print("\nCorrect! You've found an insightful solution.")
+                input("Hit enter to continue...")
+                break
+            # If pass
+            elif GPT_eval.lower() == "pass":
+                passed_trials += 1
+                write_data_row(user_response, "Pass", "NA", "NA")
+                questions.append(question) # Add "question" to the end of the list
+                print("\nQuestion forfeited.")
+                input("Hit enter to continue...")
+                break
+            # If incorrect
+            else:
+                incorrect_answers += 1
+                score = GPT_eval[-1] # Extract score from evaluation
+                GPT_eval = GPT_eval[:-2].rstrip(string.punctuation + string.whitespace) # Clean string response
+                write_data_row(user_response, "Incorrect", GPT_eval, score)
+                prev_answer_incorrect = True
+                prev_IRI_time = time()
 
 # WRITE DATA
 write_data_file()
 
 # TO DO LIST
-# Have ChatGPT rank the proximty of given answer to solution on a scale of 1-10
-# Make the spatial problems suitable for participants
-# Add automated shutdown after 60 minutes
-# If they pass, give another shot
+# (x) Have ChatGPT rank the proximty of given answer to solution on a scale of 1-10
+# Make the spatial problems suitable for participants --> maybe "describe shape"
+# (x) Add automated shutdown after 60 minutes
+# (x) If they pass, give another shot
 # 
 
 
