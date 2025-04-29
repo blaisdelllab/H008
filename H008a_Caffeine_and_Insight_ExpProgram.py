@@ -104,13 +104,13 @@ dict_of_question_info = {
         "problem_type"                  : "MATHEMATICAL"
         },
     "matchstick_problem"  : {
-        "insight_question"              : """'Describe verbally how you could move three matchsticks to make five squares: 
+        "insight_question"              : """'The figure below is made from matchsticks. By moving only three matchsticks, rearrange them to form exactly five squares. Describe the final layout–what does the new arrangement of five squares look like? 
                                  __    __
                                 |  |  |  |
                                  ¯¯|¯¯|¯¯
                                     ¯¯
                                           '""",
-        "insight_answer"                : "'Move the right-most matchstick and the two adjacent horizontal matchsticks to create a large square separated into four quadrant squares'",
+        "insight_answer"                : "'Create a large square with four quadrants' or 'One big square made of four smaller squares', respectively",
         "possible_incorrect_solution"   : "'Move three matchsticks to make five evenly-sized squares' or 'Break the matchsticks in half to make smaller squares'",
         "possible_incorrect_feedback"   : "'Not quite, please provide more details' or 'You cannot alter the matchsticks in this problem', respectively",
         "problem_type"                  : "MATHEMATICAL"
@@ -147,14 +147,14 @@ dict_of_question_info = {
         "problem_type"                  : "MATHEMATICAL"
         },
     "coin_problem"  : {
-        "insight_question"              : """'How would you rearrange two coins so that each coin touches three other coins?:
+        "insight_question"              : """'If you were to move two coins such that each coin touches three other coins, describe the final arrangement that would accomplish this:
                                  _   _   _
                                 (_)_(_)_(_)
                                  _(_)_(_)_
                                 (_) (_) (_)
 
                                           '""",
-        "insight_answer"                : "'Move two coins such that each coin creates two stacks of four. Each stack has a base of three coins.'",
+        "insight_answer"                : "'Create two pyramids, where three coins make up a triangular base and a fourth coin rests on the center'",
         "possible_incorrect_solution"   : "'Move one of the right coins to the top, in between the two top-most coins. Then move the other right coin to the bottom, in between the two bottom-most coins'",
         "possible_incorrect_feedback"   : "'With this formation, the only coin touching three other coins is the center coin. All other coins touch two'",
         "problem_type"                  : "MATHEMATICAL"
@@ -191,7 +191,7 @@ dict_of_question_info = {
         "problem_type"                  : "SPATIAL"
         }, 
     "star_coin_problem"  : {
-        "insight_question"              : """'How can you arrange these 10 pennies so that you have 5 rows (lines) of 4 pennies in each row?
+        "insight_question"              : """'If you were to rearrange these 10 pennies so that you would have 5 rows (lines) of 4 pennies in each row, what is the final arrangement needed to accomplish this? 
                      _   _   _   _   _   _   _   _   _   _
                     (_) (_) (_) (_) (_) (_) (_) (_) (_) (_)
 
