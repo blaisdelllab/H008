@@ -1,7 +1,7 @@
 """
 # H008a - A Correlational Study of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z. and Cyrus K.
-# Last edited on: 2025-04-17
+# Last edited on: 2025-05-16
 
 This code serves as the primary script for H008a, a correlational study 
 examining the effects of caffeine consumption on insight problem-solving. 
@@ -281,8 +281,7 @@ def write_data_file():
     data_folder_directory = getcwd() + "/data"
     if not os_path.isdir(data_folder_directory):
         mkdir(data_folder_directory)
-    # Ensure timestamp is Windows-friendly
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`
+    # Ensure timestamp var. is Windows-friendly
     myFile_loc = f"data/H008a_output_data_{timestamp}.csv"
     # This loop writes the data in the matrix to the .csv              
     edit_myFile = open(myFile_loc, 'w', newline='')
@@ -305,6 +304,7 @@ incorrect_answers   = 0
 start_time    = datetime.now()
 trial_time    = datetime.now()
 prev_IRI_time = time()
+timestamp = start_time.strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`; for data file
 
 # Setup questions
 questions = list(dict_of_question_info.keys())
@@ -395,6 +395,8 @@ for question in questions:
         """
 
         while True:
+            # Write data to start every response
+            write_data_file()
             clear_terminal()
             print("\n")
             print(center_text("** Insight Experiment **"))
@@ -414,6 +416,7 @@ for question in questions:
                 write_data_row(user_response, "Correct", "NA", "NA")
                 print("\nCorrect! You've found an insightful solution.")
                 input("Hit enter to continue...")
+                write_data_file() # Write data if correct
                 break
             # If pass
             elif GPT_eval.lower() == "pass":
@@ -432,14 +435,12 @@ for question in questions:
                 prev_answer_incorrect = True
                 prev_IRI_time = time()
 
-# WRITE DATA
+# WRITE DATA and end, too
 write_data_file()
 
 # TO DO LIST
-# (x) Have ChatGPT rank the proximty of given answer to solution on a scale of 1-10
-# Make the spatial problems suitable for participants --> maybe "describe shape"
-# (x) Add automated shutdown after 60 minutes
-# (x) If they pass, give another shot
-# 
+# Limit passes
+# Subject ID
+# "Pass" in written tutorial
 
 
