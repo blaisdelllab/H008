@@ -405,7 +405,7 @@ for question in questions:
             if prev_answer_incorrect:
                 user_response = input(f"{GPT_eval}. Try again: ") # Give a hint
             else:
-                user_response = input("Enter your solution (or 'quit' to exit): ")
+                user_response = input("Enter your solution (or 'pass' to skip): ")
 
             ## Evaluation
             GPT_eval = GPT_evaluate_answer(prompt, user_response)
