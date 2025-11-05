@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eligibility Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #ADD8E6;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .question {
+            display: none;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        input[type="text"] {
+            font-size: 1.5em;
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 1.5em;
+            padding: 15px 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .option-btn {
+            font-size: 1.5em;
+            padding: 20px;
+            background-color: white;
+            color: #333;
+            border: 2px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .result {
+            display: none;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .result h1 {
+            font-size: 3em;
+        }
+
+        .eligible {
+            color: #4CAF50;
+        }
+
+        .not-eligible {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Question 1: Name -->
+        <div class="question active" id="question1">
+            <h1>What is your name?</h1>
+            <input type="text" id="nameInput" placeholder="Enter your name">
+            <br>
+            <button id="nameBtn" onclick="submitName()">Enter</button>
+        </div>
+
+        <!-- Question 2: UID -->
+        <div class="question" id="question2">
+            <h1>What is your UID?</h1>
+            <input type="text" id="uidInput" placeholder="Enter your 9-digit UID" maxlength="9">
+            <br>
+            <button id="uidBtn" onclick="submitUID()">Enter</button>
+        </div>
+
+        <!-- Question 3: Caffeinated Beverages -->
+        <div class="question" id="question3">
+            <h1>How many caffeinated beverages do you drink a day?</h1>
+            <div class="options">
+                <button class="option-btn" onclick="submitBeverages('0')">0</button>
+                <button class="option-btn" onclick="submitBeverages('1')">1</button>
+                <button class="option-btn" onclick="submitBeverages('2')">2</button>
+                <button class="option-btn" onclick="submitBeverages('3+')">3+</button>
+            </div>
+        </div>
+
+        <!-- Result: Eligible -->
+        <div class="result" id="eligible">
+            <h1 class="eligible">You are ELIGIBLE for this study.</h1>
+        </div>
+
+        <!-- Result: Not Eligible -->
+        <div class="result" id="notEligible">
+            <h1 class="not-eligible">You are NOT ELIGIBLE for this study.</h1>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GOOGLE FORMS CONFIGURATION
+        // Replace these values with your own!
+        // ============================================
+        
+        // Your Google Form submission URL
+        // Change FORM_ID to your actual form ID
+        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/formResponse';
+        
+        // Your Google Form entry IDs (find these in the form's page source)
+        const ENTRY_NAME = 'entry.123456789';      // Replace with your name field entry ID
+        const ENTRY_UID = 'entry.987654321';       // Replace with your UID field entry ID
+        const ENTRY_BEVERAGES = 'entry.555555555'; // Replace with your beverages field entry ID
+        
+        // ============================================
+        
+        // Store survey responses
+        let surveyData = {
+            name: '',
+            uid: '',
+            beverages: ''
+        };
+
+        // Submit name
+        function submitName() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (name === '') {
+                alert('Please enter your name');
+                return;
+            }
+            
+            surveyData.name = name;
+            console.log('Survey Data:', surveyData);
+            
+            // Move to next question
+            document.getElementById('question1').classList.remove('active');
+            document.getElementById('question2').classList.add('active');
+        }
+
+        // Submit UID
+        function submitUID() {
+            const uidInput = document.getElementById('uidInput');
+            const uid = uidInput.value.trim();
+            
+            if (uid === '' || uid.length !== 9 || !/^\d{9}$/.test(uid)) {
+                alert('Please enter a valid 9-digit UID');
+                return;
+            }
+            
+            surveyData.uid = uid;
+            console.log('Survey Data:', surveyData);
+            
+            // Move to next question
+            document.getElementById('question2').classList.remove('active');
+            document.getElementById('question3').classList.add('active');
+        }
+
+        // Submit beverages and determine eligibility
+        function submitBeverages(answer) {
+            surveyData.beverages = answer;
+            console.log('Survey Data:', surveyData);
+            
+            // Submit to Google Forms
+            submitToGoogleForms();
+            
+            // Hide question 3
+            document.getElementById('question3').classList.remove('active');
+            
+            // Determine eligibility: 0 or 3+ = eligible, 1 or 2 = not eligible
+            if (answer === '0' || answer === '3+') {
+                document.getElementById('eligible').classList.add('active');
+            } else {
+                document.getElementById('notEligible').classList.add('active');
+            }
+        }
+
+        // Submit data to Google Forms
+        function submitToGoogleForms() {
+            // Create form data
+            const formData = new FormData();
+            formData.append(ENTRY_NAME, surveyData.name);
+            formData.append(ENTRY_UID, surveyData.uid);
+            formData.append(ENTRY_BEVERAGES, surveyData.beverages);
+            
+            // Submit to Google Forms (no-cors mode means we won't get a response, but data will be submitted)
+            fetch(GOOGLE_FORM_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors'
+            }).then(() => {
+                console.log('Data submitted to Google Forms successfully');
+            }).catch((error) => {
+                console.log('Submission attempted (Google Forms does not return confirmation)');
+            });
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitName();
+            }
+        });
+
+        document.getElementById('uidInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitUID();
+            }
+        });
+    </script>
+</body>
+</html>
