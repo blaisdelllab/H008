@@ -228,6 +228,30 @@ dict_of_question_info = {
         },
     }
 
+# Split questions into three banks of possibilities.
+dict_of_question_banks = {
+    "1" : ["light_switch_problem",
+           "baseball_game_problem",
+           "sock_problem",
+           "water_lily_problem",
+           "candles_and_tacks",
+           "river_crossing_problem"],
+    "2" : ["triplet_problem",
+           "christmas_NY_problem",
+           "balanced_equation_problem",
+           "constraint_relaxation_problem",
+           "chain_problem",
+           "deck_of_cards_problem"],
+    "3" : ["reading_problem",
+           "unlisted_phone_numbers_problem",
+           "chunk_decomposition_problem",
+           "fill_in_the_blank_problem",
+           "two_string_problem",
+           "alphabet_problem"
+           ]
+}
+
+
 def GPT_evaluate_answer(prompt, user_solution):
     if user_solution == "quit":
         clear_terminal()
@@ -314,6 +338,13 @@ print(center_text("EXPERIMENTER SETUP"))
 print(f"\nSubject ID : {subject_ID}\nABA Condition: {ABA_condition}\nQuestion Bank: {question_bank_num}\n")
 input("Hit 'enter' to start experimental session.")
 
+
+# Setup questions for this subject
+try:
+    questions = dict_of_question_banks[question_bank_num]
+except KeyError:
+    input("ERROR: Question bank number should be an integer 1, 2, or 3. Restart and try again.")
+
 # Setup data variables for session (including timer)
 list_of_answers = [["TrialNumber", "Question", "Solution", "Accuracy",
                     "Grade", "GPT_Hint", "ProblemType", "PassedQuestions",
@@ -346,9 +377,6 @@ start_time    = datetime.now()
 trial_time    = datetime.now()
 prev_IRI_time = time()
 timestamp = start_time.strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`; for data file
-
-# Setup questions
-questions = list(dict_of_question_info.keys())
 
 # Quasi-randomly shuffle questions so that there are never more than 
 # two repetitions of problem type in a row
