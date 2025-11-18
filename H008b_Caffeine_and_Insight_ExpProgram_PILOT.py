@@ -398,6 +398,16 @@ while not good_order:
     if approved:
         good_order = True
 
+# Question order dict
+question_order_dict = {
+    questions[0] : "1",
+    questions[1] : "2",
+    questions[2] : "3",
+    questions[3] : "4",
+    questions[4] : "5",
+    questions[5] : "6"
+}
+
 ##############################################################################
 
 # Main loop
@@ -452,7 +462,7 @@ for question in questions:
             # Write data to start every response
             write_data_file()
             clear_terminal()
-            print("\n")
+            print(f" Question {question_order_dict[question]}/6")
             print(center_text("╭──────────────────────────────────────────────╮"))
             print(center_text("│            Problem-Solving Experiment        │"))
             print(center_text("╰──────────────────────────────────────────────╯"))
@@ -475,7 +485,7 @@ for question in questions:
                 input("Hit enter to continue...")
                 # Write in survey
                 clear_terminal()
-                print("\n")
+                print(f" Question {question_order_dict[question]}/6")
                 print(center_text("╭──────────────────────────────────────────────╮"))
                 print(center_text("│            Problem-Solving Experiment        │"))
                 print(center_text("╰──────────────────────────────────────────────╯"))
