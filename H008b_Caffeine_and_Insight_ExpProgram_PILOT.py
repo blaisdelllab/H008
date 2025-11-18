@@ -48,7 +48,7 @@ import string
 
 # Define variables that can be changed
 
-session_duration = datetime.now() + timedelta(minutes = 45) # Max session time is 45 min
+session_duration = datetime.now() + timedelta(minutes = 30) # Max session time is 30 min
 
 
 # Function to clear the terminal
