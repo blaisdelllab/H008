@@ -1,7 +1,7 @@
 """
 # H008b - A Within-Subjects of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z., Katrina B., and Cyrus K.
-# Last edited on: 2025-11-16
+# Last edited on: 2025-11-18
 
 This code serves as the primary script for H008b, a within-subjects study 
 examining the effects of caffeine consumption on insight problem-solving.
