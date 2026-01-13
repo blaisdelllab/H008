@@ -1,7 +1,7 @@
 """
 # H008b - A Within-Subjects of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z., Katrina B., and Cyrus K.
-# Last edited on: 2025-11-18
+# Last edited on: 2026-01-13
 
 This code serves as the primary script for H008b, a within-subjects study 
 examining the effects of caffeine consumption on insight problem-solving.
@@ -45,11 +45,6 @@ import shutil
 from random import shuffle
 from os import getcwd, mkdir, path as os_path
 import string
-
-# Define variables that can be changed
-
-session_duration = datetime.now() + timedelta(minutes = 30) # Max session time is 30 min
-
 
 # Function to clear the terminal
 def clear_terminal():
@@ -256,7 +251,7 @@ def GPT_evaluate_answer(prompt, user_solution):
     if user_solution == "quit":
         clear_terminal()
         print("\nThank you for participating!")
-        write_data_file()
+        write_data_file(False)
         sys.exit()
     elif user_solution == "pass":
         return("pass")
@@ -310,7 +305,7 @@ def write_data_row(resp, correct_or_incorrect, feedback, grade, TaE_s_resp, Aha_
     ])
 
 
-def write_data_file():
+def write_data_file(cont):
     # WRITE DATA
     # Make folder 
     data_folder_directory = getcwd() + "/data"
@@ -323,7 +318,10 @@ def write_data_file():
     with edit_myFile as myFile:
         w = writer(myFile, quoting=QUOTE_MINIMAL)
         w.writerows(list_of_answers) # Write all event/trial data 
-    print(f"\n- Data file written to {myFile_loc}")
+    if not cont:
+        print("SESSION COMPLETE")
+        print(f"\n- Data file written to {myFile_loc}")
+        input()
 
 
 ###########################################################################
@@ -337,7 +335,6 @@ clear_terminal()
 print(center_text("EXPERIMENTER SETUP"))
 print(f"\nSubject ID : {subject_ID}\nABA Condition: {ABA_condition}\nQuestion Bank: {question_bank_num}\n")
 input("Hit 'enter' to start experimental session.")
-
 
 # Setup questions for this subject
 try:
@@ -377,6 +374,7 @@ start_time    = datetime.now()
 trial_time    = datetime.now()
 prev_IRI_time = time()
 timestamp = start_time.strftime("%Y-%m-%d_%H-%M-%S")  # Replace `:` with `-`; for data file
+session_duration = start_time + timedelta(minutes = 30) # Max session time is 30 min
 
 # Quasi-randomly shuffle questions so that there are never more than 
 # two repetitions of problem type in a row
@@ -411,118 +409,126 @@ question_order_dict = {
 ##############################################################################
 
 # Main loop
-for question in questions:
-    # Check if timer has ellapsed
-    if datetime.now() >= (session_duration):
-        print("Time max reached")
-        write_data_row("TimerElapsed", "NA", "NA", "NA", "NA", "NA")
-        break
-    else:
-        # For each question, we set up relevant data
-        tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
-        trial_problem_type = tested_trial_info["problem_type"] # Tested trial type
-        trial_number += 1 # Increment trial number by 1
-        trial_time    = datetime.now()
-        prev_IRI_time = time()
-        question_shorthand = question
+try:
+    for question in questions:
+        # Check if timer has ellapsed
+        if datetime.now() >= (session_duration):
+            print("\nTime max reached")
+            write_data_row("TimerElapsed", "NA", "NA", "NA", "NA", "NA")
+            break
+        else:
+            # For each question, we set up relevant data
+            tested_trial_info = dict_of_question_info[question] # Reset the question for this trial
+            trial_problem_type = tested_trial_info["problem_type"] # Tested trial type
+            trial_number += 1 # Increment trial number by 1
+            trial_time    = datetime.now()
+            prev_IRI_time = time()
+            question_shorthand = question
 
-        # Setup loop to run experiment
-        prev_answer_incorrect = False
-        GPT_eval = "NA" # Output of GPT
-        GPT_hint = "NA"
+            # Setup loop to run experiment
+            prev_answer_incorrect = False
+            GPT_eval = "NA" # Output of GPT
+            GPT_hint = "NA"
 
-        # The function below interacts with ChatGPT to evaluate a subject's written
-        # response. It takes two arguments: the subject's solution and the following
-        # prompt, and will return either "yes" or "no" based on how close it is.
-        prompt = f"""
-        You are an expert in the psychological process of insight. Your goal is to
-        evaluate the responses of experimental subjects to the following insight
-        riddle: {tested_trial_info["insight_question"]}. You know that the correct 
-        answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
-        If you are given a solution that is close enough to this one, respond with 
-        'yes' and only yes.  If some other non-insightful solution, respond with a 
-        sentence of feedback on why that answer is incorrect without giving away the 
-        answer. For example, if someone were to give the answer 
-        {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
-        might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
-        importance that you do not give away the answer in your hint. Make sure to
-        double check that your feedback does not give away the answer. Also, note
-        that in your feedback, don't ever refer to these as riddles, but refer to them
-        as problems.
-        In addition to the verbal feedback for incorrect answers, create a numeric grade to 
-        evaluate the degree of correctness of the participants answer. The number should
-        on a scale of 1-4, with 1 (nonsense), 2 (sensical but far from a correct solution),
-        3 (may contains some key words but far from the solution), 4 (contains some logic
-        or keywords from the correct solution, but not quite enough to be correct.).
-        End your feedback response for incorrect answers with a single number evaluating their
-        correctness with no additional punctuation.
-        """
+            # The function below interacts with ChatGPT to evaluate a subject's written
+            # response. It takes two arguments: the subject's solution and the following
+            # prompt, and will return either "yes" or "no" based on how close it is.
+            prompt = f"""
+            You are an expert in the psychological process of insight. Your goal is to
+            evaluate the responses of experimental subjects to the following insight
+            riddle: {tested_trial_info["insight_question"]}. You know that the correct 
+            answer is something along the lines of: {tested_trial_info["insight_answer"]}. 
+            If you are given a solution that is close enough to this one, respond with 
+            'yes' and only yes.  If some other non-insightful solution, respond with a 
+            sentence of feedback on why that answer is incorrect without giving away the 
+            answer. For example, if someone were to give the answer 
+            {tested_trial_info["possible_incorrect_solution"]} a suitable response from you 
+            might be {tested_trial_info["possible_incorrect_feedback"]}. It is of paramount 
+            importance that you do not give away the answer in your hint. Make sure to
+            double check that your feedback does not give away the answer. Also, note
+            that in your feedback, don't ever refer to these as riddles, but refer to them
+            as problems.
+            In addition to the verbal feedback for incorrect answers, create a numeric grade to 
+            evaluate the degree of correctness of the participants answer. The number should
+            on a scale of 1-4, with 1 (nonsense), 2 (sensical but far from a correct solution),
+            3 (may contains some key words but far from the solution), 4 (contains some logic
+            or keywords from the correct solution, but not quite enough to be correct.).
+            End your feedback response for incorrect answers with a single number evaluating their
+            correctness with no additional punctuation.
+            """
 
-        while True:
-            # Write data to start every response
-            write_data_file()
-            clear_terminal()
-            print(f" Question {question_order_dict[question]}/6")
-            print(center_text("╭──────────────────────────────────────────────╮"))
-            print(center_text("│            Problem-Solving Experiment        │"))
-            print(center_text("╰──────────────────────────────────────────────╯"))
-            print(center_text(f"Earned points: {earned_points}\n\n"))
-            print("\nPlease provide a solution to the following problem:\n\n" + tested_trial_info["insight_question"])
-            print("_" * int(shutil.get_terminal_size().columns) + "\n") # Aesthetics
-            if prev_answer_incorrect:
-                user_response = input(f"{GPT_eval}.\nYou've earned {incorrect_point_dict[GPT_score]} points for your guess. Try again: ") # Give a hint
-            else:
-                user_response = input(f"Enter your solution (or 'pass' to skip for -{skip_cost} points): ")
-
-            ## Evaluation
-            GPT_eval = GPT_evaluate_answer(prompt, user_response)
-            # If correct
-            if GPT_eval.lower() == "yes":
-                correct_trials += 1
-                earned_points += correct_reward
-                # Write a row of data
-                print(f"\nCorrect! You've found a solution and earned +{correct_reward} points.")
-                input("Hit enter to continue...")
-                # Write in survey
+            while True:
+                # Write data to start every response
+                write_data_file(True)
                 clear_terminal()
                 print(f" Question {question_order_dict[question]}/6")
                 print(center_text("╭──────────────────────────────────────────────╮"))
                 print(center_text("│            Problem-Solving Experiment        │"))
                 print(center_text("╰──────────────────────────────────────────────╯"))
                 print(center_text(f"Earned points: {earned_points}\n\n"))
-                print("\n\n\nPROBLEM-SOLVING SURVEY")
-                trial_and_error_survey_resp = input("On a scale of 1-5, how much did you rely on trial-and-error thinking to reach your answer? (1 = very litle, 5 = a great deal): ")
-                insight_survey_resp = input("On a scale of 1-5, to what extent did you experinece an 'aha' moment when solving this question? (1 = very litle, 5 = a great deal): ")
-                write_data_row(user_response, "Correct", "NA", "NA", trial_and_error_survey_resp, insight_survey_resp)
-                write_data_file() # Write data if correct
-                break
-            # If 'pass' user response
-            elif GPT_eval.lower() == "pass":
-                print(f"\nPassing this question means you can come back later, but will cost {skip_cost} points.")
-                possible_pass = input("Are you sure you want to pass this question? ('yes' or 'no'): ")
-                if possible_pass.lower() == "yes":
-                    earned_points -= skip_cost
-                    passed_trials += 1
-                    write_data_row(user_response, "Pass", "NA", "NA", "NA", "NA")
-                    questions.append(question) # Add "question" to the end of the list
-                    print("\nQuestion forfeited.")
-                    input("Hit enter to continue...")
-                    break
+                print("\nPlease provide a solution to the following problem:\n\n" + tested_trial_info["insight_question"])
+                print("_" * int(shutil.get_terminal_size().columns) + "\n") # Aesthetics
+                if prev_answer_incorrect:
+                    user_response = input(f"{GPT_eval}.\nYou've earned {incorrect_point_dict[GPT_score]} points for your guess. Try again: ") # Give a hint
                 else:
-                    prev_answer_incorrect = False
-            # If incorrect
-            else:
-                incorrect_answers += 1
-                # Update scoring
-                GPT_score = GPT_eval[-1] # Extract score from evaluation
-                earned_points += int(incorrect_point_dict[GPT_score])
-                # Extract eval/write data
-                GPT_eval = GPT_eval[:-2].rstrip(string.punctuation + string.whitespace) # Clean string response
-                write_data_row(user_response, "Incorrect", GPT_eval, GPT_score, "NA", "NA")
-                prev_answer_incorrect = True
-                prev_IRI_time = time()
+                    user_response = input(f"Enter your solution (or 'pass' to skip for -{skip_cost} points): ")
 
-# WRITE DATA at the end, too
-write_data_file()
+                ## Evaluation
+                GPT_eval = GPT_evaluate_answer(prompt, user_response)
+                # If correct
+                if GPT_eval.lower() == "yes":
+                    correct_trials += 1
+                    earned_points += correct_reward
+                    # Write a row of data
+                    print(f"\nCorrect! You've found a solution and earned +{correct_reward} points.")
+                    input("Hit enter to continue...")
+                    # Write in survey
+                    clear_terminal()
+                    print(f" Question {question_order_dict[question]}/6")
+                    print(center_text("╭──────────────────────────────────────────────╮"))
+                    print(center_text("│            Problem-Solving Experiment        │"))
+                    print(center_text("╰──────────────────────────────────────────────╯"))
+                    print(center_text(f"Earned points: {earned_points}\n\n"))
+                    print("\n\n\nPROBLEM-SOLVING SURVEY")
+                    trial_and_error_survey_resp = input("On a scale of 1-5, how much did you rely on trial-and-error thinking to reach your answer? (1 = very litle, 5 = a great deal): ")
+                    insight_survey_resp = input("On a scale of 1-5, to what extent did you experinece an 'aha' moment when solving this question? (1 = very litle, 5 = a great deal): ")
+                    write_data_row(user_response, "Correct", "NA", "NA", trial_and_error_survey_resp, insight_survey_resp)
+                    write_data_file(True) # Write data if correct
+                    break
+                # If 'pass' user response
+                elif GPT_eval.lower() == "pass":
+                    print(f"\nPassing this question means you can come back later, but will cost {skip_cost} points.")
+                    possible_pass = input("Are you sure you want to pass this question? ('yes' or 'no'): ")
+                    if possible_pass.lower() == "yes":
+                        earned_points -= skip_cost
+                        passed_trials += 1
+                        write_data_row(user_response, "Pass", "NA", "NA", "NA", "NA")
+                        questions.append(question) # Add "question" to the end of the list
+                        print("\nQuestion forfeited.")
+                        input("Hit enter to continue...")
+                        break
+                    else:
+                        prev_answer_incorrect = False
+                # If incorrect
+                else:
+                    incorrect_answers += 1
+                    # Update scoring
+                    GPT_score = GPT_eval[-1] # Extract score from evaluation
+                    earned_points += int(incorrect_point_dict[GPT_score])
+                    # Extract eval/write data
+                    GPT_eval = GPT_eval[:-2].rstrip(string.punctuation + string.whitespace) # Clean string response
+                    write_data_row(user_response, "Incorrect", GPT_eval, GPT_score, "NA", "NA")
+                    prev_answer_incorrect = True
+                    prev_IRI_time = time()
+
+    # WRITE DATA at the end, too
+    write_data_file(False)
+
+except Exception as e:
+    clear_terminal()
+    print("\nERROR DURING SESSION -- please notify experimenter")
+    print("Error type:", type(e).__name__)
+    print("Message:", e)
+    input("\nPress Enter to end session...")
 
 
