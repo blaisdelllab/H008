@@ -1,7 +1,7 @@
 """
 # H008b - A Within-Subjects of Caffeine Consumption and Its Effect on Insight Problem 
 # Created by Lina Z., Katrina B., and Cyrus K.
-# Last edited on: 2026-01-13
+# Last edited on: 2026-02-01
 
 This code serves as the primary script for H008b, a within-subjects study 
 examining the effects of caffeine consumption on insight problem-solving.
@@ -159,15 +159,15 @@ dict_of_question_info = {
     "water_lily_problem"  : {
         "insight_question"              : "'A lake has water lilies growing on its surface. The patch of lilies doubles in size every day. At the beginning of the summer, there is one water lily on the lake. It takes 60 days for the lake to become completely covered with water lilies. On which day was the lake half covered?'",
         "insight_answer"                : "'59th day' or '59' or 'day 59'",
-        "possible_incorrect_solution"   : "'30th day' or '30' or 'day 30' or, respectively",
+        "possible_incorrect_solution"   : "'30th day' or '30' or 'day 30', respectively",
         "possible_incorrect_feedback"   : "'On that day, less than a billionth of the lake is covered' or 'Think about how the water lilies multiply and grow', respectively ",
         "problem_type"                  : "MATHEMATICAL"
         },
-    "fill_in_the_blank_problem"  : {
-        "insight_question"              : "'Fill in the blank: 2, 4, 6, 30 32, 34, 36, 40, 42, 44, 46, 50, 52, 54, 56, 60, 62, 64, 66, __?'",
-        "insight_answer"                : "'2000 (the next number without an e in it)'",
-        "possible_incorrect_solution"   : "'70' or '90', respectively",
-        "possible_incorrect_feedback"   : "'The next number in this sequence is not 70' or 'Unlike the jump between 6 and 30, you do not add 30 to achieve the next number in the sequence', respectively",
+    "morris_number_sequence_problem"  : {
+        "insight_question"              : "'What is the next number in this sequence? 1, 11, 21, 1211, 111221, ___'",
+        "insight_answer"                : "'312211'",
+        "possible_incorrect_solution"   : "'112' or '122564', respectively",
+        "possible_incorrect_feedback"   : "'The next number in this sequence is not 112' or 'Not quite, try thinking of the relationship between numbers differently', respectively",
         "problem_type"                  : "MATHEMATICAL"
         },
     # SPATIAL PROBLEMS
@@ -220,7 +220,7 @@ dict_of_question_info = {
         "possible_incorrect_solution"   : "'Take the wolf first,' respectively",
         "possible_incorrect_feedback"   : "'Taking the wolf first leaves the goat and cabbage together' or 'You can take everyone across in seven trips (3.5 round trips)', respectively",
         "problem_type"                  : "SPATIAL"
-        },
+        }
     }
 
 # Split questions into three banks of possibilities.
@@ -228,7 +228,7 @@ dict_of_question_banks = {
     "1" : ["light_switch_problem",
            "baseball_game_problem",
            "sock_problem",
-           "water_lily_problem",
+           "morris_number_sequence_problem",
            "candles_and_tacks",
            "river_crossing_problem"],
     "2" : ["triplet_problem",
@@ -240,12 +240,11 @@ dict_of_question_banks = {
     "3" : ["reading_problem",
            "unlisted_phone_numbers_problem",
            "chunk_decomposition_problem",
-           "fill_in_the_blank_problem",
+           "water_lily_problem",
            "two_string_problem",
            "alphabet_problem"
            ]
 }
-
 
 def GPT_evaluate_answer(prompt, user_solution):
     if user_solution == "quit":
@@ -253,7 +252,7 @@ def GPT_evaluate_answer(prompt, user_solution):
         print("\nThank you for participating!")
         write_data_file(False)
         sys.exit()
-    elif user_solution == "pass":
+    elif user_solution.lower() == "pass":
         return("pass")
     else:
         print(center_text("Checking solution..."))
@@ -322,6 +321,40 @@ def write_data_file(cont):
         print("SESSION COMPLETE")
         print(f"\n- Data file written to {myFile_loc}")
         input()
+
+def give_survey_question(q_num, pts):
+    while True:
+        clear_terminal()
+        print(f" Question {q_num}/6")
+        print(center_text("╭──────────────────────────────────────────────╮"))
+        print(center_text("│            Problem-Solving Experiment        │"))
+        print(center_text("╰──────────────────────────────────────────────╯"))
+        print(center_text(f"Earned points: {pts}\n\n"))
+        print("\n\n\nPROBLEM-SOLVING SURVEY")
+        
+        trial_and_error_survey_resp = input("On a scale of 1-5, how much did you rely on trial-and-error thinking to reach your answer? (1 = very little, 5 = a great deal): ")
+        try:
+            trial_and_error_survey_resp = int(trial_and_error_survey_resp)
+            if not 1 <= trial_and_error_survey_resp <= 5:
+                raise ValueError
+        except ValueError:
+            input(f"Error: response must be an integer between 1 and 5. Hit enter and try again")
+            continue
+            
+        insight_survey_resp = input("On a scale of 1-5, to what extent did you experience an 'aha' moment when solving this question? (1 = very little, 5 = a great deal): ")
+        try:
+            insight_survey_resp = int(insight_survey_resp)
+            if not 1 <= insight_survey_resp <= 5:
+                raise ValueError
+        except ValueError:
+            input(f"Error: response must be an integer between 1 and 5. Hit enter and try again")
+            continue
+            
+        break
+    
+    # If everything is kosher, then end the survey and write data
+    write_data_row(user_response, "Correct", "NA", "NA", trial_and_error_survey_resp, insight_survey_resp)
+    write_data_file(True) # Write data if correct
 
 
 ###########################################################################
@@ -469,7 +502,7 @@ try:
                 print("\nPlease provide a solution to the following problem:\n\n" + tested_trial_info["insight_question"])
                 print("_" * int(shutil.get_terminal_size().columns) + "\n") # Aesthetics
                 if prev_answer_incorrect:
-                    user_response = input(f"{GPT_eval}.\nYou've earned {incorrect_point_dict[GPT_score]} points for your guess. Try again: ") # Give a hint
+                    user_response = input(f"{GPT_eval}.\nYou've earned {incorrect_point_dict[GPT_score]} points for your guess. Try again (or type 'pass' to skip for -{skip_cost} points): ") # Give a hint
                 else:
                     user_response = input(f"Enter your solution (or 'pass' to skip for -{skip_cost} points): ")
 
@@ -483,17 +516,7 @@ try:
                     print(f"\nCorrect! You've found a solution and earned +{correct_reward} points.")
                     input("Hit enter to continue...")
                     # Write in survey
-                    clear_terminal()
-                    print(f" Question {question_order_dict[question]}/6")
-                    print(center_text("╭──────────────────────────────────────────────╮"))
-                    print(center_text("│            Problem-Solving Experiment        │"))
-                    print(center_text("╰──────────────────────────────────────────────╯"))
-                    print(center_text(f"Earned points: {earned_points}\n\n"))
-                    print("\n\n\nPROBLEM-SOLVING SURVEY")
-                    trial_and_error_survey_resp = input("On a scale of 1-5, how much did you rely on trial-and-error thinking to reach your answer? (1 = very litle, 5 = a great deal): ")
-                    insight_survey_resp = input("On a scale of 1-5, to what extent did you experinece an 'aha' moment when solving this question? (1 = very litle, 5 = a great deal): ")
-                    write_data_row(user_response, "Correct", "NA", "NA", trial_and_error_survey_resp, insight_survey_resp)
-                    write_data_file(True) # Write data if correct
+                    give_survey_question(question_order_dict[question], earned_points) # Complete post-correct answer survey
                     break
                 # If 'pass' user response
                 elif GPT_eval.lower() == "pass":
@@ -504,7 +527,7 @@ try:
                         passed_trials += 1
                         write_data_row(user_response, "Pass", "NA", "NA", "NA", "NA")
                         questions.append(question) # Add "question" to the end of the list
-                        print("\nQuestion forfeited.")
+                        print("\nQuestion passed.")
                         input("Hit enter to continue...")
                         break
                     else:
